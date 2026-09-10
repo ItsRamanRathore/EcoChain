@@ -1,0 +1,20 @@
+databases:
+  - name: ecochain-db
+    databaseName: ecochain
+    user: admin
+    plan: free
+
+services:
+  - type: web
+    name: ecochain-api
+    env: python
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && python -m app.db.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecochain-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+    plan: free

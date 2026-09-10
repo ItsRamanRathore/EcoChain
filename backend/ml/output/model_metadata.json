@@ -1,0 +1,16 @@
+{
+  "categories": [
+    "Battery",
+    "Cable",
+    "CRT",
+    "LCD",
+    "Mixed",
+    "Motor",
+    "PCB",
+    "Plastic"
+  ],
+  "input_size": 224,
+  "validation_accuracy": 0.6290322542190552,
+  "total_training_images": 480,
+  "note": "MobileNetV2 transfer learning, quantized"
+}
