@@ -112,9 +112,10 @@ def seed():
                 source="Platform"
             ))
             
-    # 3. Seed Collector
     print("Seeding test collector...")
-    if not db.query(Collector).filter_by(display_name="Test Collector").first():
+    collector = db.query(Collector).filter_by(display_name="Test Collector").first()
+    from app.core.security import hash_phone
+    if not collector:
         db.add(Collector(
             preferred_language="English",
             operating_district="Mumbai",
@@ -123,8 +124,11 @@ def seed():
             total_transactions=0,
             total_earnings=0,
             display_name="Test Collector",
-            phone_hash=hash_pin("9999999999")
+            phone_hash=hash_phone("9999999999")
         ))
+    else:
+        # Hotfix for incorrectly hashed phone numbers in earlier deploys
+        collector.phone_hash = hash_phone("9999999999")
         
     db.commit()
     print("Seeding completed successfully.")
