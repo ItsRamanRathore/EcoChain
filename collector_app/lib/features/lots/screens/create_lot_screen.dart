@@ -29,14 +29,14 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
   String? _aiSuggestedCategory;
 
   final Map<String, Color> _categories = {
-    'PCB': Colors.green.shade700,
-    'Cable': Colors.orange.shade700,
-    'Battery': Colors.red.shade700,
-    'LCD': Colors.blue.shade700,
-    'CRT': Colors.grey.shade800,
-    'Motor': Colors.brown.shade700,
-    'Plastic': Colors.purple.shade700,
-    'Mixed': Colors.teal.shade700,
+    'PCB': const Color(0xFFE8F5E9),
+    'Cable': const Color(0xFFFFF3E0),
+    'Battery': const Color(0xFFFFEBEE),
+    'LCD': const Color(0xFFE3F2FD),
+    'CRT': const Color(0xFFEEEEEE),
+    'Motor': const Color(0xFFEFEBE9),
+    'Plastic': const Color(0xFFF3E5F5),
+    'Others': const Color(0xFFE8F5E9),
   };
 
   @override
@@ -173,20 +173,57 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
     return Column(
       children: [
         if (_aiSuggestedCategory != null)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: Colors.green.shade100,
-            child: Column(
-              children: [
-                const Text('AI Suggestion', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                Text(_aiSuggestedCategory!, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.auto_awesome, color: Colors.green, size: 16),
+                            const SizedBox(width: 4),
+                            const Text('AI Suggestion', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 14)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_aiSuggestedCategory!, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
+                        const SizedBox(height: 4),
+                        Text('Looks like ${_aiSuggestedCategory!.toLowerCase()} items', style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  if (_aiSuggestedCategory != 'Analyzing...' && _aiSuggestedCategory != 'Unknown')
+                    Image.asset(
+                      'assets/images/cat_${_aiSuggestedCategory!.toLowerCase()}.jpg',
+                      height: 80,
+                      width: 80,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
+                ],
+              ),
             ),
           ),
         const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Confirm or Select Category', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Confirm or Select Category', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+              Text('Choose the category that best matches your item', style: TextStyle(fontSize: 14, color: Colors.grey)),
+            ],
+          ),
         ),
         Expanded(
           child: GridView.builder(
@@ -209,19 +246,38 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? color : color.withValues(alpha: 0.1),
+                    color: color,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: color, width: 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      cat,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : color,
-                      ),
+                    border: Border.all(
+                      color: isSelected ? Colors.green.shade700 : color.withValues(alpha: 0.5),
+                      width: isSelected ? 3 : 1,
                     ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Image.asset(
+                            'assets/images/cat_${cat.toLowerCase()}.jpg',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 50, color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Text(
+                          cat,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -236,10 +292,20 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
               onPressed: _selectedCategory == null ? null : _nextPage,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                backgroundColor: Colors.green.shade700,
+                backgroundColor: const Color(0xFF2E7D32),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
-              child: const Text('Next: Enter Weight', style: TextStyle(fontSize: 20)),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Next: Enter Weight', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward),
+                ],
+              ),
             ),
           ),
         ),

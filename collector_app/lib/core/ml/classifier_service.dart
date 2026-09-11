@@ -10,38 +10,67 @@ class ClassifierService {
   Future<void> init() async {
     _interpreter = await Interpreter.fromAsset('assets/ml/material_classifier.tflite');
     final labelData = await rootBundle.loadString('assets/ml/labels.txt');
-    _labels = labelData.trim().split('\n');
+    _labels = labelData.trim().split('\n').map((e) => e.trim()).toList();
   }
 
   // Returns top prediction + confidence
   Map<String, dynamic> classify(img.Image image) {
-    // Resize to 224x224
-    final resized = img.copyResize(image, width: inputSize, height: inputSize);
+    // 1. Resize image to 224x224 (required by model)
+    final resizedImage = img.copyResize(image, width: inputSize, height: inputSize);
 
-    // Normalize to [-1, 1] (MobileNetV2 preprocessing)
-    var input = List.generate(1, (_) =>
-      List.generate(inputSize, (y) =>
-        List.generate(inputSize, (x) {
-          final pixel = resized.getPixel(x, y);
-          return [
-            (pixel.r / 127.5) - 1.0,
-            (pixel.g / 127.5) - 1.0,
-            (pixel.b / 127.5) - 1.0,
-          ];
-        })
-      )
+    // 2. Convert image to a 4D tensor: [1, 224, 224, 3] of float32
+    var input = List.generate(
+      1,
+      (i) => List.generate(
+        inputSize,
+        (y) => List.generate(
+          inputSize,
+          (x) {
+            final pixel = resizedImage.getPixelSafe(x, y);
+            // Normalize pixel values to [0, 1] as expected by MobileNet float32 models
+            return [
+              pixel.r.toDouble() / 255.0,
+              pixel.g.toDouble() / 255.0,
+              pixel.b.toDouble() / 255.0,
+            ];
+          },
+        ),
+      ),
     );
 
-    var output = List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
-    _interpreter.run(input, output);
+    // 3. Prepare output tensor: [1, 8]
+    var output = List.generate(1, (i) => List.filled(_labels.length, 0.0));
 
-    final scores = output[0] as List<double>;
-    final maxIdx = scores.indexOf(scores.reduce((a, b) => a > b ? a : b));
+    // 4. Run inference safely
+    try {
+      _interpreter.run(input, output);
+    } catch (e) {
+      print("Error running TFLite inference: $e");
+      return {
+        'category': 'Unknown',
+        'confidence': 0.0,
+        'all_scores': {},
+      };
+    }
+
+    // 5. Parse output to find the highest confidence
+    final probabilities = output[0];
+    int maxIdx = 0;
+    double maxConfidence = 0.0;
+    Map<String, double> allScores = {};
+
+    for (int i = 0; i < probabilities.length; i++) {
+      allScores[_labels[i]] = probabilities[i];
+      if (probabilities[i] > maxConfidence) {
+        maxConfidence = probabilities[i];
+        maxIdx = i;
+      }
+    }
 
     return {
       'category': _labels[maxIdx],
-      'confidence': scores[maxIdx],
-      'all_scores': Map.fromIterables(_labels, scores),
+      'confidence': maxConfidence,
+      'all_scores': allScores,
     };
   }
 }

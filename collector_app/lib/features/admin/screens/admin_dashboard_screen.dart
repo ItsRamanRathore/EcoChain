@@ -56,12 +56,12 @@ class AdminDashboardScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.black87,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.shade200, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

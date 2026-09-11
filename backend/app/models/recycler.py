@@ -12,7 +12,7 @@ class Recycler(Base):
     longitude = Column(DECIMAL)
     materials_accepted = Column(ARRAY(String))
     auth_number = Column(String)
-    auth_status = Column(Enum('Active', 'Expired', 'Suspended', name='auth_status_enum'))
+    auth_status = Column(Enum('Active', 'Expired', 'Suspended', name='auth_status_enum'), default='Active')
     auth_expiry_date = Column(Date)
     contact_phone = Column(String)
     contact_email = Column(String)
@@ -20,4 +20,16 @@ class Recycler(Base):
     pickup_available = Column(Boolean)
     service_radius_km = Column(Integer)
     operating_hours = Column(String)
-    verified_by_admin = Column(Boolean)
+    verified_by_admin = Column(Boolean, default=False)
+    # New auth + approval fields
+    email = Column(String, nullable=True, unique=True)
+    password_hash = Column(String, nullable=True)
+    approval_status = Column(
+        Enum('pending', 'approved', 'rejected', name='approval_status_enum'),
+        nullable=False, default='pending'
+    )
+    rejection_reason = Column(String, nullable=True)
+    shop_image_url = Column(String, nullable=True)
+    shop_latitude = Column(DECIMAL, nullable=True)
+    shop_longitude = Column(DECIMAL, nullable=True)
+

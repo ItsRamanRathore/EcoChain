@@ -26,15 +26,8 @@ class _RecyclerPricesTabState extends ConsumerState<RecyclerPricesTab> {
     super.dispose();
   }
 
-  Future<void> _updatePrice(String category) async {
-    final text = _controllers[category]?.text.trim();
-    if (text == null || text.isEmpty) return;
-
-    final newPrice = double.tryParse(text);
-    if (newPrice == null) return;
-
+  Future<void> _updatePrice(String category, double newPrice) async {
     setState(() => _isSaving = true);
-
     try {
       await DioClient.instance.patch(
         '/recyclers/prices',
@@ -43,14 +36,67 @@ class _RecyclerPricesTabState extends ConsumerState<RecyclerPricesTab> {
           'new_price': newPrice,
         },
       );
-      
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$category price updated!')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$category price updated!'), backgroundColor: const Color(0xFFFFAA00)));
       ref.invalidate(recyclerProfileProvider);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating price: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating price: $e'), backgroundColor: const Color(0xFFFF4D6D)));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+  }
+
+  void _showAddCategoryDialog() {
+    final catController = TextEditingController();
+    final priceController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Add New Category', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: catController,
+              decoration: InputDecoration(
+                labelText: 'Category Name',
+                hintText: 'e.g. Copper Wire',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: 'Price per Kg (₹)',
+                hintText: 'e.g. 500',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final cat = catController.text.trim();
+              final price = double.tryParse(priceController.text);
+              if (cat.isNotEmpty && price != null) {
+                Navigator.pop(ctx);
+                _updatePrice(cat, price);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFAA00), foregroundColor: Colors.white),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -62,15 +108,26 @@ class _RecyclerPricesTabState extends ConsumerState<RecyclerPricesTab> {
       appBar: AppBar(
         title: const Text('Update Offered Rates', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFFFFFFF),
+        elevation: 0,
       ),
+      floatingActionButton: profileAsync.hasValue ? FloatingActionButton.extended(
+        onPressed: _showAddCategoryDialog,
+        backgroundColor: const Color(0xFFFFAA00),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Add Category', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ) : null,
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFFFAA00))),
         error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
         data: (profile) {
           final offeredRates = Map<String, dynamic>.from(profile['offered_rates'] ?? {});
 
+          if (offeredRates.isEmpty) {
+            return const Center(child: Text('No categories added yet. Add one below.', style: TextStyle(color: Colors.black54)));
+          }
+
           return ListView.builder(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 80),
             itemCount: offeredRates.length,
             itemBuilder: (context, index) {
               final category = offeredRates.keys.elementAt(index);
@@ -115,7 +172,10 @@ class _RecyclerPricesTabState extends ConsumerState<RecyclerPricesTab> {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: _isSaving ? null : () => _updatePrice(category),
+                      onPressed: _isSaving ? null : () {
+                        final price = double.tryParse(_controllers[category]!.text);
+                        if (price != null) _updatePrice(category, price);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFAA00),
                         foregroundColor: const Color(0xFFFFFFFF),

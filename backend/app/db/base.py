@@ -1,4 +1,5 @@
 from app.db.base_class import Base
+from app.models.admin import Admin
 from app.models.material import Material
 from app.models.price import Price
 from app.models.recycler import Recycler

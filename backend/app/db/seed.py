@@ -4,11 +4,21 @@ from app.db.session import SessionLocal
 from app.models.recycler import Recycler
 from app.models.price import Price
 from app.models.collector import Collector
-from app.core.security import hash_pin
+from app.models.admin import Admin
+from app.core.security import hash_pin, hash_phone, hash_password
 
 def seed():
     db = SessionLocal()
     
+    # 0. Seed Global Admin
+    print("Seeding admin user...")
+    if not db.query(Admin).filter_by(email="admin@gmail.com").first():
+        db.add(Admin(
+            email="admin@gmail.com",
+            password_hash=hash_password("admin123"),
+            display_name="System Admin"
+        ))
+
     # 1. Seed Recyclers
     print("Seeding recyclers...")
     SEED_RECYCLERS = [
@@ -23,7 +33,8 @@ def seed():
             "offered_rates": {"PCB": 210, "Cable": 85, "Battery": 45, "LCD": 30},
             "pickup_available": True,
             "service_radius_km": 30,
-            "verified_by_admin": True
+            "verified_by_admin": True,
+            "approval_status": "approved",
         },
         {
             "name": "Pune E-Waste Solutions",
@@ -36,7 +47,8 @@ def seed():
             "offered_rates": {"CRT": 10, "Motor": 50, "Plastic": 15, "Mixed": 25, "PCB": 190},
             "pickup_available": True,
             "service_radius_km": 40,
-            "verified_by_admin": True
+            "verified_by_admin": True,
+            "approval_status": "approved",
         },
         {
             "name": "Nashik Green Tech",
@@ -49,7 +61,8 @@ def seed():
             "offered_rates": {"Battery": 40, "Motor": 48, "Cable": 80},
             "pickup_available": False,
             "service_radius_km": 15,
-            "verified_by_admin": True
+            "verified_by_admin": True,
+            "approval_status": "approved",
         },
         {
             "name": "Nagpur Metal Recyclers",
@@ -62,7 +75,8 @@ def seed():
             "offered_rates": {"PCB": 205, "Cable": 82, "Battery": 42, "CRT": 12, "LCD": 28, "Motor": 45, "Plastic": 18, "Mixed": 20},
             "pickup_available": True,
             "service_radius_km": 50,
-            "verified_by_admin": True
+            "verified_by_admin": True,
+            "approval_status": "approved",
         },
         {
             "name": "Aurangabad E-Scrap",
@@ -75,13 +89,19 @@ def seed():
             "offered_rates": {"PCB": 195, "Battery": 44, "LCD": 32},
             "pickup_available": True,
             "service_radius_km": 25,
-            "verified_by_admin": True
+            "verified_by_admin": True,
+            "approval_status": "approved",
         }
     ]
     
     for r_data in SEED_RECYCLERS:
-        if not db.query(Recycler).filter_by(name=r_data["name"]).first():
+        existing = db.query(Recycler).filter_by(name=r_data["name"]).first()
+        if not existing:
             db.add(Recycler(**r_data))
+        else:
+            # Ensure existing seed recyclers are approved
+            existing.approval_status = "approved"
+            existing.verified_by_admin = True
     
     # 2. Seed Prices
     print("Seeding prices...")
@@ -114,7 +134,6 @@ def seed():
             
     print("Seeding test collector...")
     collector = db.query(Collector).filter_by(display_name="Test Collector").first()
-    from app.core.security import hash_phone
     if not collector:
         db.add(Collector(
             preferred_language="English",
@@ -124,11 +143,13 @@ def seed():
             total_transactions=0,
             total_earnings=0,
             display_name="Test Collector",
-            phone_hash=hash_phone("9999999999")
+            phone_hash=hash_phone("9999999999"),
+            pin_hash=hash_pin("9999"),
         ))
     else:
         # Hotfix for incorrectly hashed phone numbers in earlier deploys
         collector.phone_hash = hash_phone("9999999999")
+        collector.pin_hash = hash_pin("9999")
         
     db.commit()
     print("Seeding completed successfully.")

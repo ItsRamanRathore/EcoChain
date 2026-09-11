@@ -8,8 +8,11 @@ services:
   - type: web
     name: ecochain-api
     env: python
+    # Install deps then run Alembic migrations before starting.
+    # 'alembic upgrade head' is SAFE: it only adds new columns/tables,
+    # never drops existing data. This ensures schema is always up to date.
     buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:

@@ -10,11 +10,13 @@ class AdminAppShell extends ConsumerWidget {
     (path: '/admin/home',          icon: Icons.dashboard_outlined,       activeIcon: Icons.dashboard,              label: 'Metrics'),
     (path: '/admin/recyclers',     icon: Icons.factory_outlined,         activeIcon: Icons.factory,                label: 'Recyclers'),
     (path: '/admin/transactions',  icon: Icons.receipt_long_outlined,    activeIcon: Icons.receipt_long,           label: 'Transactions'),
+    (path: '/admin/profile',       icon: Icons.person_outline,           activeIcon: Icons.person,                 label: 'Profile'),
   ];
 
   int _currentIndex(String location) {
     if (location.startsWith('/admin/recyclers')) return 1;
     if (location.startsWith('/admin/transactions')) return 2;
+    if (location.startsWith('/admin/profile')) return 3;
     return 0;
   }
 

@@ -21,8 +21,16 @@ import 'features/recycler_dashboard/screens/recycler_home_tab.dart';
 import 'features/recycler_dashboard/screens/recycler_scanner_tab.dart';
 import 'features/recycler_dashboard/screens/recycler_prices_tab.dart';
 import 'features/recycler_dashboard/screens/recycler_handover_confirm_screen.dart';
-
 import 'features/admin/screens/admin_shell.dart';
+import 'features/admin/screens/admin_dashboard_screen.dart';
+import 'features/admin/screens/admin_recyclers_screen.dart';
+import 'features/admin/screens/admin_transactions_screen.dart';
+
+import 'features/auth/screens/collector_signup_screen.dart';
+import 'features/auth/screens/recycler_signup_screen.dart';
+import 'features/home/screens/collector_profile_screen.dart';
+import 'features/recycler_dashboard/screens/recycler_profile_tab.dart';
+import 'features/admin/screens/admin_profile_screen.dart';
 import 'features/admin/screens/admin_dashboard_screen.dart';
 import 'features/admin/screens/admin_recyclers_screen.dart';
 import 'features/admin/screens/admin_transactions_screen.dart';
@@ -43,8 +51,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/login',
     redirect: (context, state) {
       final isLoggingIn = state.matchedLocation == '/login';
+      final isSigningUp = state.matchedLocation.startsWith('/signup');
       
-      if (!authState.isAuthenticated && !isLoggingIn) {
+      if (!authState.isAuthenticated && !isLoggingIn && !isSigningUp) {
         return '/login';
       }
       
@@ -68,6 +77,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
+      GoRoute(
+        path: '/signup/collector',
+        builder: (context, state) => const CollectorSignupScreen(),
+      ),
+      GoRoute(
+        path: '/signup/recycler',
+        builder: (context, state) => const RecyclerSignupScreen(),
+      ),
       // Admin Routes
       ShellRoute(
         builder: (context, state, child) => AdminAppShell(child: child),
@@ -83,6 +100,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/transactions',
             pageBuilder: (context, state) => const NoTransitionPage(child: AdminTransactionsScreen()),
+          ),
+          GoRoute(
+            path: '/admin/profile',
+            pageBuilder: (context, state) => const NoTransitionPage(child: AdminProfileScreen()),
           ),
         ],
       ),
@@ -101,6 +122,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/collector/recyclers',
             pageBuilder: (context, state) => const NoTransitionPage(child: RecyclerMatchScreen()),
+          ),
+          GoRoute(
+            path: '/collector/profile',
+            pageBuilder: (context, state) => const NoTransitionPage(child: CollectorProfileScreen()),
           ),
         ],
       ),
@@ -149,6 +174,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/recycler/prices',
             pageBuilder: (context, state) => const NoTransitionPage(child: RecyclerPricesTab()),
           ),
+          GoRoute(
+            path: '/recycler/profile',
+            pageBuilder: (context, state) => const NoTransitionPage(child: RecyclerProfileTab()),
+          ),
         ],
       ),
       GoRoute(
@@ -182,7 +211,7 @@ class _CollectorAppState extends ConsumerState<CollectorApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'EcoChain Platform',
+      title: 'e-Mulya Platform',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -208,11 +237,13 @@ class AppShell extends ConsumerWidget {
     (path: '/collector/home',      icon: Icons.home_outlined,       activeIcon: Icons.home,              label: 'Home'),
     (path: '/collector/prices',    icon: Icons.bar_chart_outlined,  activeIcon: Icons.bar_chart,         label: 'Prices'),
     (path: '/collector/recyclers', icon: Icons.factory_outlined,    activeIcon: Icons.factory,            label: 'Recyclers'),
+    (path: '/collector/profile',   icon: Icons.person_outline,      activeIcon: Icons.person,            label: 'Profile'),
   ];
 
   int _currentIndex(String location) {
     if (location.startsWith('/collector/prices')) return 1;
     if (location.startsWith('/collector/recyclers')) return 2;
+    if (location.startsWith('/collector/profile')) return 3;
     return 0;
   }
 
@@ -252,11 +283,13 @@ class RecyclerAppShell extends ConsumerWidget {
     (path: '/recycler/home',      icon: Icons.dashboard_outlined,       activeIcon: Icons.dashboard,              label: 'Dashboard'),
     (path: '/recycler/scanner',   icon: Icons.qr_code_scanner_outlined, activeIcon: Icons.qr_code_scanner,        label: 'Scan'),
     (path: '/recycler/prices',    icon: Icons.price_change_outlined,    activeIcon: Icons.price_change,           label: 'Prices'),
+    (path: '/recycler/profile',   icon: Icons.person_outline,           activeIcon: Icons.person,                 label: 'Profile'),
   ];
 
   int _currentIndex(String location) {
     if (location.startsWith('/recycler/scanner')) return 1;
     if (location.startsWith('/recycler/prices')) return 2;
+    if (location.startsWith('/recycler/profile')) return 3;
     return 0;
   }
 
@@ -339,7 +372,7 @@ class HomeTab extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'EcoChain',
+                                'e-Mulya',
                                 style: TextStyle(
                                   color: Colors.black87,
                                   fontSize: 26,

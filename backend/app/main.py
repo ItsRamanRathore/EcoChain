@@ -9,15 +9,32 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Run Alembic migrations instead of create_all.
+    # This is safe for existing data — Alembic only applies new changes.
     try:
-        from app.db.base import Base
-        from app.db.session import engine
-        Base.metadata.create_all(bind=engine)
+        from alembic.config import Config
+        from alembic import command
+        import os
         
+        alembic_cfg = Config()
+        alembic_cfg.set_main_option(
+            "script_location",
+            os.path.join(os.path.dirname(__file__), "..", "alembic")
+        )
+        from app.core.config import settings as _settings
+        alembic_cfg.set_main_option("sqlalchemy.url", _settings.SQLALCHEMY_DATABASE_URI)
+        command.upgrade(alembic_cfg, "head")
+        print("Alembic migrations applied successfully.")
+    except Exception as e:
+        print(f"Alembic migration failed: {e}")
+    
+    # Seed reference data (idempotent — skips existing rows)
+    try:
         from app.db.seed import seed
         seed()
     except Exception as e:
-        print(f"Startup DB init failed: {e}")
+        print(f"Seed failed: {e}")
+    
     yield
 
 app = FastAPI(

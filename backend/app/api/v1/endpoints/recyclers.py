@@ -6,6 +6,9 @@ from app.models.recycler import Recycler
 from app.models.price import Price
 from app.models.transaction import Transaction
 from app.schemas.recycler import RecyclerResponse, RecyclerDashboardMetrics, RecyclerPriceUpdate
+from app.core.security import verify_password, hash_password
+from pydantic import BaseModel
+from typing import Optional
 import math
 
 router = APIRouter()
@@ -156,13 +159,56 @@ def update_price(
     db: Session = Depends(get_db),
     current_recycler = Depends(get_current_recycler)
 ):
-    # Retrieve current rates or default to empty dict
     rates = current_recycler.offered_rates or {}
-    # SQLAlchemy requires assigning a new dict to JSON columns to detect changes
     rates_copy = rates.copy()
     rates_copy[update.category] = update.new_price
-    
     current_recycler.offered_rates = rates_copy
+    # Also add to materials_accepted if not already there
+    mats = list(current_recycler.materials_accepted or [])
+    if update.category not in mats:
+        mats.append(update.category)
+        current_recycler.materials_accepted = mats
     db.commit()
     db.refresh(current_recycler)
     return current_recycler
+
+class RecyclerMaterialAdd(BaseModel):
+    category: str
+    initial_price: float = 0.0
+
+class RecyclerChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.patch("/materials")
+def add_material(
+    req: RecyclerMaterialAdd,
+    db: Session = Depends(get_db),
+    current_recycler = Depends(get_current_recycler)
+):
+    """Add a new material category the recycler accepts."""
+    mats = list(current_recycler.materials_accepted or [])
+    if req.category in mats:
+        raise HTTPException(status_code=400, detail="Category already accepted")
+    mats.append(req.category)
+    rates = dict(current_recycler.offered_rates or {})
+    rates[req.category] = req.initial_price
+    current_recycler.materials_accepted = mats
+    current_recycler.offered_rates = rates
+    db.commit()
+    db.refresh(current_recycler)
+    return {"message": f"{req.category} added", "materials_accepted": current_recycler.materials_accepted}
+
+@router.patch("/change-password")
+def change_recycler_password(
+    req: RecyclerChangePassword,
+    db: Session = Depends(get_db),
+    current_recycler = Depends(get_current_recycler)
+):
+    if not current_recycler.password_hash:
+        raise HTTPException(status_code=400, detail="No password set for this account")
+    if not verify_password(req.current_password, current_recycler.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    current_recycler.password_hash = hash_password(req.new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}

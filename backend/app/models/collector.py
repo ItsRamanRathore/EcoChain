@@ -14,3 +14,9 @@ class Collector(Base):
     total_earnings = Column(DECIMAL)
     display_name = Column(String)
     phone_hash = Column(String)
+    # New auth fields
+    email = Column(String, nullable=True)
+    pin_hash = Column(String, nullable=True)  # bcrypt-hashed PIN
+    # GPS location captured at signup
+    latitude = Column(DECIMAL, nullable=True)
+    longitude = Column(DECIMAL, nullable=True)

@@ -33,6 +33,7 @@ dependencies:
   # Location & Hardware
   geolocator: ^13.0.2
   mobile_scanner: ^5.2.3
+  permission_handler: ^11.3.1
   
   # UI & Accessibility
   flutter_svg: ^2.0.9
@@ -58,3 +59,4 @@ flutter:
   assets:
     - assets/ml/material_classifier.tflite
     - assets/ml/labels.txt
+    - assets/images/

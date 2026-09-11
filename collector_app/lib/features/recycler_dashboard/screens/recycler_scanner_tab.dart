@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class RecyclerScannerTab extends StatefulWidget {
   const RecyclerScannerTab({super.key});
@@ -13,7 +14,30 @@ class RecyclerScannerTab extends StatefulWidget {
 class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
   final MobileScannerController _scannerController = MobileScannerController();
   bool _isProcessing = false;
+  bool _hasCameraPermission = false;
   final TextEditingController _refController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _requestCameraPermission();
+  }
+
+  Future<void> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    if (mounted) {
+      setState(() {
+        _hasCameraPermission = status.isGranted;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    _refController.dispose();
+    super.dispose();
+  }
 
   void _onDetect(BarcodeCapture capture) {
     if (_isProcessing) return;
@@ -64,84 +88,131 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
         title: const Text('Scan Handover QR', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFFFFFFF),
       ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: _scannerController,
-            onDetect: _onDetect,
-          ),
-          
-          // Scanner Overlay overlay
-          Container(
-            decoration: ShapeDecoration(
-              shape: QrScannerOverlayShape(
-                borderColor: const Color(0xFFFFAA00),
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutSize: 250,
-              ),
-            ),
-          ),
-          
-          // Manual entry
-          Positioned(
-            bottom: 40,
-            left: 24,
-            right: 24,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFFFF),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black26),
-              ),
-              child: Column(
-                children: [
-                  const Text('Or enter Ref Number manually', style: TextStyle(color: Colors.black87)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _refController,
-                          style: const TextStyle(color: Colors.black87),
-                          decoration: InputDecoration(
-                            hintText: 'e.g., HO-2026-MH-ABCD',
-                            hintStyle: const TextStyle(color: Colors.black38),
-                            filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_refController.text.isNotEmpty) {
-                            // Mocking manual entry payload
-                            _processScannedData(jsonEncode({
-                              'lot_id': _refController.text,
-                              'transaction_id': 'manual-entry',
-                            }));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFAA00),
-                          foregroundColor: const Color(0xFFFFFFFF),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Icon(Icons.arrow_forward),
-                      ),
-                    ],
+      body: !_hasCameraPermission
+          ? _buildPermissionDeniedScreen()
+          : Stack(
+              children: [
+                MobileScanner(
+                  controller: _scannerController,
+                  onDetect: _onDetect,
+                ),
+                
+                // Scanner Overlay overlay
+                Container(
+                  decoration: ShapeDecoration(
+                    shape: QrScannerOverlayShape(
+                      borderColor: const Color(0xFFFFAA00),
+                      borderRadius: 10,
+                      borderLength: 30,
+                      borderWidth: 10,
+                      cutOutSize: 250,
+                    ),
                   ),
-                ],
+                ),
+                
+                // Manual entry
+                Positioned(
+                  bottom: 40,
+                  left: 24,
+                  right: 24,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFFFF),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.black26),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text('Or enter Ref Number manually', style: TextStyle(color: Colors.black87)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _refController,
+                                style: const TextStyle(color: Colors.black87),
+                                decoration: InputDecoration(
+                                  hintText: 'e.g., HO-2026-MH-ABCD',
+                                  hintStyle: const TextStyle(color: Colors.black38),
+                                  filled: true,
+                                  fillColor: const Color(0xFFFAFAFA),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (_refController.text.isNotEmpty) {
+                                  // Mocking manual entry payload
+                                  _processScannedData(jsonEncode({
+                                    'lot_id': _refController.text,
+                                    'transaction_id': 'manual-entry',
+                                  }));
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFAA00),
+                                foregroundColor: const Color(0xFFFFFFFF),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Icon(Icons.arrow_forward),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildPermissionDeniedScreen() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.camera_alt_outlined, size: 80, color: Color(0xFFFFAA00)),
+            const SizedBox(height: 24),
+            const Text(
+              'Camera Access Required',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Please allow camera access to scan the QR code on the handover receipt.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final status = await Permission.camera.request();
+                if (status.isGranted && mounted) {
+                  setState(() => _hasCameraPermission = true);
+                } else {
+                  openAppSettings();
+                }
+              },
+              icon: const Icon(Icons.settings),
+              label: const Text('Grant Permission'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFAA00),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
