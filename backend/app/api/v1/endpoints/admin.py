@@ -13,6 +13,17 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+@router.get("/run_seed")
+def run_seed():
+    from app.db.seed import seed
+    try:
+        seed()
+        return {"status": "success"}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
+
+
 class RecyclerStatusUpdate(BaseModel):
     auth_status: str
 
