@@ -1,6 +1,6 @@
 {
   "@@locale": "hi",
-  "appTitle": "ईकोचेन कलेक्टर",
+  "appTitle": "ई-मूल्य कलेक्टर",
   "dashboard": "डैशबोर्ड",
   "inventory": "इन्वेंटरी",
   "analytics": "एनालिटिक्स",
@@ -18,5 +18,21 @@
   "navScan": "स्कैन",
   "myProfile": "मेरी प्रोफ़ाइल",
   "priceBoard": "कीमत बोर्ड",
-  "recyclersList": "रीसाइक्लर्स खोजें"
+  "recyclersList": "रीसाइक्लर्स खोजें",
+  "profileTransactions": "लेन-देन",
+  "profileEarnings": "कमाई",
+  "profileLanguage": "भाषा",
+  "profileJoined": "शामिल हुए",
+  "lotNewTitle": "नया हैंडओवर लॉट",
+  "lotTakephoto": "ई-वेस्ट लॉट की फोटो लें",
+  "lotCaptureBtn": "फोटो खींचें",
+  "lotConfirmCat": "श्रेणी की पुष्टि करें या चुनें",
+  "lotChooseCat": "वह श्रेणी चुनें जो आपके आइटम से सबसे अच्छी तरह मेल खाती हो",
+  "lotNextWeight": "अगला: वजन दर्ज करें",
+  "lotHearEstimate": "अनुमान सुनें",
+  "lotReview": "समीक्षा करें",
+  "lotSummary": "लॉट सारांश",
+  "lotCategory": "श्रेणी",
+  "lotWeight": "वजन",
+  "lotSaveFinish": "सहेजें और समाप्त करें"
 }

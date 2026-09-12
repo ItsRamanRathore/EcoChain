@@ -43,4 +43,9 @@ class HandoverRepository {
       },
     );
   }
+
+  Future<Map<String, dynamic>> verifyHandover(String refNumber) async {
+    final response = await DioClient.instance.get('/handover/$refNumber/verify');
+    return response.data;
+  }
 }

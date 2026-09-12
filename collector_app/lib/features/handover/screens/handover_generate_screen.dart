@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../repository/handover_repository.dart';
 import '../../../models/local/lot_local.dart';
 import '../../../models/api/recycler_model.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../../core/local_storage/hive_setup.dart';
 
 class HandoverGenerateScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> args;
@@ -36,6 +38,9 @@ class _HandoverGenerateScreenState extends ConsumerState<HandoverGenerateScreen>
         recyclerId: recycler.recyclerId,
         materialCategory: lot.materialCategory,
       );
+      
+      // Save record locally for pending lots access
+      Hive.box(HiveBoxes.pendingTransactions).put(lot.serverId!, record.toJson());
       
       if (mounted) {
         context.go('/collector/handover/qr', extra: record);

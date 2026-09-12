@@ -62,14 +62,14 @@ class CollectorProfileScreen extends ConsumerWidget {
               Row(
                 children: [
                   _StatCard(
-                    label: 'Transactions',
+                    label: AppLocalizations.of(context)!.profileTransactions,
                     value: '${profile['total_transactions'] ?? 0}',
                     icon: Icons.receipt_long,
                     color: const Color(0xFF00C896),
                   ),
                   const SizedBox(width: 12),
                   _StatCard(
-                    label: 'Earnings',
+                    label: AppLocalizations.of(context)!.profileEarnings,
                     value: '₹${(profile['total_earnings'] ?? 0.0).toStringAsFixed(0)}',
                     icon: Icons.currency_rupee,
                     color: const Color(0xFF4D9FFF),
@@ -79,8 +79,8 @@ class CollectorProfileScreen extends ConsumerWidget {
               const SizedBox(height: 20),
 
               _InfoCard(items: [
-                _InfoItem(icon: Icons.language, label: 'Language', value: profile['preferred_language'] ?? '-'),
-                _InfoItem(icon: Icons.calendar_today, label: 'Joined', value: profile['registration_date'] ?? '-'),
+                _InfoItem(icon: Icons.language, label: AppLocalizations.of(context)!.profileLanguage, value: profile['preferred_language'] ?? '-'),
+                _InfoItem(icon: Icons.calendar_today, label: AppLocalizations.of(context)!.profileJoined, value: profile['registration_date'] ?? '-'),
               ]),
             ],
           ),

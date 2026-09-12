@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repository/lot_repository.dart';
 import '../../../core/ml/classifier_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CreateLotScreen extends ConsumerStatefulWidget {
   const CreateLotScreen({super.key});
@@ -117,7 +118,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Handover Lot'),
+        title: Text(AppLocalizations.of(context)!.lotNewTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -149,15 +150,15 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
         children: [
           const Icon(Icons.camera_alt, size: 100, color: Colors.grey),
           const SizedBox(height: 30),
-          const Text(
-            'Take a photo of the E-Waste lot',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)!.lotTakephoto,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 50),
           ElevatedButton.icon(
             onPressed: _capturePhoto,
             icon: const Icon(Icons.camera, size: 30),
-            label: const Text('Capture Photo', style: TextStyle(fontSize: 24)),
+            label: Text(AppLocalizations.of(context)!.lotCaptureBtn, style: const TextStyle(fontSize: 24)),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
               backgroundColor: Colors.green.shade700,
@@ -215,13 +216,13 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
               ),
             ),
           ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Confirm or Select Category', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
-              Text('Choose the category that best matches your item', style: TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(AppLocalizations.of(context)!.lotConfirmCat, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+              Text(AppLocalizations.of(context)!.lotChooseCat, style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ],
           ),
         ),
@@ -298,11 +299,11 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Next: Enter Weight', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.lotNextWeight, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
                   Icon(Icons.arrow_forward),
                 ],
               ),
@@ -347,7 +348,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _speakEstimate,
                             icon: const Icon(Icons.volume_up),
-                            label: const Text('Hear Estimate'),
+                            label: Text(AppLocalizations.of(context)!.lotHearEstimate),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade100,
                               foregroundColor: Colors.blue.shade900,
@@ -364,7 +365,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                               backgroundColor: Colors.green.shade700,
                               foregroundColor: Colors.white,
                             ),
-                            child: const Text('Review', style: TextStyle(fontSize: 20)),
+                            child: Text(AppLocalizations.of(context)!.lotReview, style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                       ),
@@ -413,7 +414,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Lot Summary', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context)!.lotSummary, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           if (_imageFile != null)
             ClipRRect(
@@ -423,9 +424,9 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                   : Image.file(File(_imageFile!.path), height: 200, width: double.infinity, fit: BoxFit.cover),
             ),
           const SizedBox(height: 20),
-          _buildSummaryRow('Category', _selectedCategory ?? ''),
+          _buildSummaryRow(AppLocalizations.of(context)!.lotCategory, _selectedCategory ?? ''),
           const Divider(),
-          _buildSummaryRow('Weight', '$_weightInput kg'),
+          _buildSummaryRow(AppLocalizations.of(context)!.lotWeight, '$_weightInput kg'),
           const SizedBox(height: 40),
           SizedBox(
             width: double.infinity,
@@ -459,7 +460,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
                 backgroundColor: Colors.green.shade800,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Save & Finish', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.lotSaveFinish, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
           ),
         ],

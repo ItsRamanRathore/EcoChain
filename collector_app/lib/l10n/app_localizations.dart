@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'EcoChain Collector'**
+  /// **'e-Mulya Collector'**
   String get appTitle;
 
   /// No description provided for @dashboard.
@@ -195,6 +195,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan'**
   String get navScan;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @priceBoard.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Board'**
+  String get priceBoard;
+
+  /// No description provided for @recyclersList.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Recyclers'**
+  String get recyclersList;
+
+  /// No description provided for @profileTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get profileTransactions;
+
+  /// No description provided for @profileEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get profileEarnings;
+
+  /// No description provided for @profileLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLanguage;
+
+  /// No description provided for @profileJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get profileJoined;
+
+  /// No description provided for @lotNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Handover Lot'**
+  String get lotNewTitle;
+
+  /// No description provided for @lotTakephoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the E-Waste lot'**
+  String get lotTakephoto;
+
+  /// No description provided for @lotCaptureBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture Photo'**
+  String get lotCaptureBtn;
+
+  /// No description provided for @lotConfirmCat.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm or Select Category'**
+  String get lotConfirmCat;
+
+  /// No description provided for @lotChooseCat.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the category that best matches your item'**
+  String get lotChooseCat;
+
+  /// No description provided for @lotNextWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Enter Weight'**
+  String get lotNextWeight;
+
+  /// No description provided for @lotHearEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear Estimate'**
+  String get lotHearEstimate;
+
+  /// No description provided for @lotReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get lotReview;
+
+  /// No description provided for @lotSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Lot Summary'**
+  String get lotSummary;
+
+  /// No description provided for @lotCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get lotCategory;
+
+  /// No description provided for @lotWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get lotWeight;
+
+  /// No description provided for @lotSaveFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Finish'**
+  String get lotSaveFinish;
 }
 
 class _AppLocalizationsDelegate

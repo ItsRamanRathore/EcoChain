@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/local_storage/hive_setup.dart';
 import '../../../models/local/lot_local.dart';
+import '../../../models/api/handover_record.dart';
 
 class PendingLotsScreen extends ConsumerWidget {
   const PendingLotsScreen({super.key});
@@ -100,15 +101,41 @@ class _LotHandoverCard extends StatelessWidget {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00C896),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () => context.go('/collector/handover/confirm', extra: lot),
-                child: const Text('Initiate Handover', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box(HiveBoxes.pendingTransactions).listenable(keys: [lot.serverId]),
+                builder: (context, Box box, _) {
+                  final hasGeneratedQr = lot.serverId != null && box.containsKey(lot.serverId);
+                  
+                  if (hasGeneratedQr) {
+                    return OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF00C896),
+                        side: const BorderSide(color: Color(0xFF00C896)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        final rawData = box.get(lot.serverId);
+                        final recordMap = Map<String, dynamic>.from(rawData);
+                        final record = HandoverRecord.fromJson(recordMap);
+                        context.go('/collector/handover/qr', extra: record);
+                      },
+                      icon: const Icon(Icons.qr_code),
+                      label: const Text('View QR Code', style: TextStyle(fontWeight: FontWeight.bold)),
+                    );
+                  }
+
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00C896),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => context.go('/collector/handover/confirm', extra: lot),
+                    child: const Text('Initiate Handover', style: TextStyle(fontWeight: FontWeight.bold)),
+                  );
+                },
               ),
             ),
           ],

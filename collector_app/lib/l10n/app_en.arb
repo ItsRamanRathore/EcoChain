@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "EcoChain Collector",
+  "appTitle": "e-Mulya Collector",
   "dashboard": "Dashboard",
   "inventory": "Inventory",
   "analytics": "Analytics",
@@ -18,5 +18,21 @@
   "navScan": "Scan",
   "myProfile": "My Profile",
   "priceBoard": "Price Board",
-  "recyclersList": "Find Recyclers"
+  "recyclersList": "Find Recyclers",
+  "profileTransactions": "Transactions",
+  "profileEarnings": "Earnings",
+  "profileLanguage": "Language",
+  "profileJoined": "Joined",
+  "lotNewTitle": "New Handover Lot",
+  "lotTakephoto": "Take a photo of the E-Waste lot",
+  "lotCaptureBtn": "Capture Photo",
+  "lotConfirmCat": "Confirm or Select Category",
+  "lotChooseCat": "Choose the category that best matches your item",
+  "lotNextWeight": "Next: Enter Weight",
+  "lotHearEstimate": "Hear Estimate",
+  "lotReview": "Review",
+  "lotSummary": "Lot Summary",
+  "lotCategory": "Category",
+  "lotWeight": "Weight",
+  "lotSaveFinish": "Save & Finish"
 }

@@ -38,4 +38,18 @@ class HandoverRecord {
         status: json['status'] ?? 'Pending',
         collectionTimestamp: DateTime.parse(json['collection_timestamp']),
       );
+
+  Map<String, dynamic> toJson() => {
+        'trace_id': traceId,
+        'lot_id': lotId,
+        'ref_number': refNumber,
+        'qr_code_data': qrCodeData,
+        'material_category': materialCategory,
+        'weight_at_collection': weightAtCollection,
+        'recycler_name': recyclerName,
+        'recycler_auth_number': recyclerAuthNumber,
+        'collector_display_name': collectorDisplayName,
+        'status': status,
+        'collection_timestamp': collectionTimestamp.toIso8601String(),
+      };
 }

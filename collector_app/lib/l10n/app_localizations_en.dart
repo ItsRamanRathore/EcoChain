@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'EcoChain Collector';
+  String get appTitle => 'e-Mulya Collector';
 
   @override
   String get dashboard => 'Dashboard';
@@ -55,4 +55,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navScan => 'Scan';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get priceBoard => 'Price Board';
+
+  @override
+  String get recyclersList => 'Find Recyclers';
+
+  @override
+  String get profileTransactions => 'Transactions';
+
+  @override
+  String get profileEarnings => 'Earnings';
+
+  @override
+  String get profileLanguage => 'Language';
+
+  @override
+  String get profileJoined => 'Joined';
+
+  @override
+  String get lotNewTitle => 'New Handover Lot';
+
+  @override
+  String get lotTakephoto => 'Take a photo of the E-Waste lot';
+
+  @override
+  String get lotCaptureBtn => 'Capture Photo';
+
+  @override
+  String get lotConfirmCat => 'Confirm or Select Category';
+
+  @override
+  String get lotChooseCat => 'Choose the category that best matches your item';
+
+  @override
+  String get lotNextWeight => 'Next: Enter Weight';
+
+  @override
+  String get lotHearEstimate => 'Hear Estimate';
+
+  @override
+  String get lotReview => 'Review';
+
+  @override
+  String get lotSummary => 'Lot Summary';
+
+  @override
+  String get lotCategory => 'Category';
+
+  @override
+  String get lotWeight => 'Weight';
+
+  @override
+  String get lotSaveFinish => 'Save & Finish';
 }
