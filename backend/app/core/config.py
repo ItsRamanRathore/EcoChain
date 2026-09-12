@@ -20,8 +20,6 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str = os.getenv("CLOUDINARY_API_KEY", "")
     CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET", "")
     
-    # Roboflow
-    ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "")
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
