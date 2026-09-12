@@ -49,6 +49,35 @@ def confirm_transaction(
     db.refresh(tx)
     return tx
 
+@router.patch("/by-ref/{ref_number}/confirm", response_model=TransactionResponse)
+def confirm_transaction_by_ref(
+    ref_number: str,
+    tx_confirm: TransactionConfirm,
+    db: Session = Depends(get_db),
+    current_recycler = Depends(get_current_recycler)
+):
+    from app.models.traceability import Traceability
+    trace = db.query(Traceability).filter(Traceability.handover_ref_number == ref_number).first()
+    if not trace:
+        raise HTTPException(status_code=404, detail="Handover record not found")
+        
+    tx = db.query(Transaction).filter(Transaction.lot_id == trace.lot_id).first()
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+        
+    if str(tx.recycler_id) != str(tx_confirm.recycler_id):
+        raise HTTPException(status_code=403, detail="Not authorized to confirm this transaction")
+        
+    tx.final_price = tx_confirm.final_price
+    tx.quantity_weight = tx_confirm.actual_weight
+    tx.handover_location = tx_confirm.handover_gps
+    tx.transaction_status = 'Completed'
+    tx.handover_datetime = datetime.now(timezone.utc)
+    
+    db.commit()
+    db.refresh(tx)
+    return tx
+
 @router.get("/history/me", response_model=List[TransactionResponse])
 def get_transaction_history(
     db: Session = Depends(get_db),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CollectorProfileScreen extends ConsumerWidget {
   const CollectorProfileScreen({super.key});
@@ -17,7 +18,10 @@ class CollectorProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('My Profile', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: Text(
+          AppLocalizations.of(context)!.myProfile, 
+          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black54),

@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "inventory": "Inventory",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "heading": {
+    "overview": "Overview",
+    "recent_activity": "Recent Activity",
+    "status": "Status"
+  },
+  "status": {
+    "active": "Active",
+    "pending": "Pending",
+    "completed": "Completed",
+    "error": "Error"
+  }
+}

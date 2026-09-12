@@ -1,0 +1,22 @@
+{
+  "@@locale": "en",
+  "appTitle": "EcoChain Collector",
+  "dashboard": "Dashboard",
+  "inventory": "Inventory",
+  "analytics": "Analytics",
+  "settings": "Settings",
+  "newLot": "New Lot",
+  "handover": "Handover",
+  "recentActivity": "Recent Activity",
+  "statusActive": "Active",
+  "statusPending": "Pending",
+  "statusCompleted": "Completed",
+  "navHome": "Home",
+  "navPrices": "Prices",
+  "navRecyclers": "Recyclers",
+  "navProfile": "Profile",
+  "navScan": "Scan",
+  "myProfile": "My Profile",
+  "priceBoard": "Price Board",
+  "recyclersList": "Find Recyclers"
+}

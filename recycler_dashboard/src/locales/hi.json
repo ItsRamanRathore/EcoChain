@@ -1,0 +1,19 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "inventory": "इन्वेंटरी",
+    "analytics": "एनालिटिक्स",
+    "settings": "सेटिंग्स"
+  },
+  "heading": {
+    "overview": "अवलोकन",
+    "recent_activity": "हाल की गतिविधि",
+    "status": "स्थिति"
+  },
+  "status": {
+    "active": "सक्रिय",
+    "pending": "लंबित",
+    "completed": "पूरा हुआ",
+    "error": "त्रुटि"
+  }
+}

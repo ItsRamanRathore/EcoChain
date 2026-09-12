@@ -1,0 +1,22 @@
+{
+  "@@locale": "mr",
+  "appTitle": "इकोचेन कलेक्टर",
+  "dashboard": "डॅशबोर्ड",
+  "inventory": "इन्वेंटरी",
+  "analytics": "अॅनालिटिक्स",
+  "settings": "सेटिंग्ज",
+  "newLot": "नवीन लॉट",
+  "handover": "हँडओव्हर",
+  "recentActivity": "अलीकडील क्रियाकलाप",
+  "statusActive": "सक्रिय",
+  "statusPending": "प्रलंबित",
+  "statusCompleted": "पूर्ण",
+  "navHome": "मुख्यपृष्ठ",
+  "navPrices": "किमती",
+  "navRecyclers": "रिसायकलर्स",
+  "navProfile": "प्रोफाइल",
+  "navScan": "स्कॅन",
+  "myProfile": "माझी प्रोफाइल",
+  "priceBoard": "किंमत बोर्ड",
+  "recyclersList": "रिसायकलर्स शोधा"
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/api/recycler_model.dart';
 import '../providers/recycler_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─── Category config (shared with Price Board) ───────────────────────────────
 
@@ -36,9 +37,9 @@ class _RecyclerMatchScreenState extends ConsumerState<RecyclerMatchScreen> {
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFFFFF),
-        title: const Text(
-          'Find Recyclers',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.recyclersList,
+          style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w700,
             fontSize: 22,

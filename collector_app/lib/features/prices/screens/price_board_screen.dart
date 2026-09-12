@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/api/price_model.dart';
 import '../providers/price_provider.dart';
 import '../repository/price_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─── Category display config ────────────────────────────────────────────────
 
@@ -70,9 +71,9 @@ class _PriceBoardScreenState extends ConsumerState<PriceBoardScreen> {
   AppBar _buildAppBar(BuildContext context, AsyncValue<(List<PriceModel>, bool)> pricesAsync) {
     return AppBar(
       backgroundColor: const Color(0xFFFFFFFF),
-      title: const Text(
-        'Price Board',
-        style: TextStyle(
+      title: Text(
+        AppLocalizations.of(context)!.priceBoard,
+        style: const TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.w700,
           fontSize: 22,

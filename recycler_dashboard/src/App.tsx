@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
+import { LanguageSelector } from './components/LanguageSelector'
+import { useTranslation } from 'react-i18next'
 import './App.css'
 
-function App() {
+function AppContent() {
   const [count, setCount] = useState(0)
+  const { t } = useTranslation()
 
   return (
     <>
+      <header style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem' }}>
+        <LanguageSelector />
+      </header>
       <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
@@ -116,6 +122,14 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
+  )
+}
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AppContent />
+    </Suspense>
   )
 }
 

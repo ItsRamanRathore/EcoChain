@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'l10n/app_localizations.dart';
+import 'core/providers/locale_provider.dart';
 import 'providers/sync_provider.dart';
 import 'features/lots/screens/create_lot_screen.dart';
 import 'features/prices/screens/price_board_screen.dart';
@@ -13,6 +15,7 @@ import 'features/handover/screens/handover_generate_screen.dart';
 import 'features/handover/screens/qr_display_screen.dart';
 import 'features/handover/screens/handover_complete_screen.dart';
 import 'features/earnings/screens/earnings_screen.dart';
+import 'shared/widgets/language_selector.dart';
 import 'models/local/lot_local.dart';
 import 'models/api/handover_record.dart';
 import 'features/auth/screens/login_screen.dart';
@@ -210,8 +213,12 @@ class _CollectorAppState extends ConsumerState<CollectorApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
       title: 'e-Mulya Platform',
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -261,11 +268,20 @@ class AppShell extends ConsumerWidget {
         selectedIndex: currentIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (i) => context.go(_tabs[i].path),
-        destinations: _tabs.map((t) {
+        destinations: _tabs.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final t = entry.value;
+          final l10n = AppLocalizations.of(context)!;
+          String localizedLabel = t.label;
+          if (idx == 0) localizedLabel = l10n.navHome;
+          if (idx == 1) localizedLabel = l10n.navPrices;
+          if (idx == 2) localizedLabel = l10n.navRecyclers;
+          if (idx == 3) localizedLabel = l10n.navProfile;
+
           return NavigationDestination(
             icon: Icon(t.icon, color: Colors.black54),
             selectedIcon: Icon(t.activeIcon, color: const Color(0xFF00C896)),
-            label: t.label,
+            label: localizedLabel,
           );
         }).toList(),
       ),
@@ -307,11 +323,20 @@ class RecyclerAppShell extends ConsumerWidget {
         selectedIndex: currentIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (i) => context.go(_tabs[i].path),
-        destinations: _tabs.map((t) {
+        destinations: _tabs.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final t = entry.value;
+          final l10n = AppLocalizations.of(context)!;
+          String localizedLabel = t.label;
+          if (idx == 0) localizedLabel = l10n.dashboard;
+          if (idx == 1) localizedLabel = l10n.navScan;
+          if (idx == 2) localizedLabel = l10n.navPrices;
+          if (idx == 3) localizedLabel = l10n.navProfile;
+
           return NavigationDestination(
             icon: Icon(t.icon, color: Colors.black54),
             selectedIcon: Icon(t.activeIcon, color: const Color(0xFFFFAA00)),
-            label: t.label,
+            label: localizedLabel,
           );
         }).toList(),
       ),
@@ -368,25 +393,27 @@ class HomeTab extends ConsumerWidget {
                             child: const Icon(Icons.recycling, color: Color(0xFF00C896), size: 26),
                           ),
                           const SizedBox(width: 14),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'e-Mulya',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)!.appTitle,
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'Collector Platform',
-                                style: TextStyle(color: Colors.black54, fontSize: 13),
-                              ),
-                            ],
+                                const Text(
+                                  'Collector Platform',
+                                  style: TextStyle(color: Colors.black54, fontSize: 13),
+                                ),
+                              ],
+                            ),
                           ),
-                          const Spacer(),
+                          const LanguageSelector(),
                           IconButton(
                             onPressed: () {
                               ref.read(authProvider.notifier).logout();
@@ -400,7 +427,7 @@ class HomeTab extends ConsumerWidget {
                       _HomePrimaryCard(
                         icon: Icons.add_circle_outline,
                         color: const Color(0xFF00C896),
-                        title: 'New Lot',
+                        title: AppLocalizations.of(context)!.newLot,
                         subtitle: 'Photograph, classify & weigh a new e-waste lot',
                         onTap: () => context.push('/collector/create-lot'),
                       ),
@@ -411,7 +438,7 @@ class HomeTab extends ConsumerWidget {
                             child: _HomeQuickCard(
                               icon: Icons.inventory_2,
                               color: const Color(0xFF00C896),
-                              title: 'Handover',
+                              title: AppLocalizations.of(context)!.handover,
                               onTap: () => context.push('/collector/pending-lots'),
                             ),
                           ),
@@ -420,7 +447,7 @@ class HomeTab extends ConsumerWidget {
                             child: _HomeQuickCard(
                               icon: Icons.bar_chart,
                               color: const Color(0xFF4D9FFF),
-                              title: 'Prices',
+                              title: AppLocalizations.of(context)!.analytics,
                               onTap: () => context.go('/collector/prices'),
                             ),
                           ),
@@ -429,7 +456,7 @@ class HomeTab extends ConsumerWidget {
                             child: _HomeQuickCard(
                               icon: Icons.factory,
                               color: const Color(0xFFFFAA00),
-                              title: 'Recyclers',
+                              title: AppLocalizations.of(context)!.settings,
                               onTap: () => context.go('/collector/recyclers'),
                             ),
                           ),

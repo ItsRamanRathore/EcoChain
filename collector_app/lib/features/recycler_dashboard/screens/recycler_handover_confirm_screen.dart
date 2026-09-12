@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import '../providers/recycler_dashboard_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class RecyclerHandoverConfirmScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> payload;
@@ -41,15 +42,25 @@ class _RecyclerHandoverConfirmScreenState extends ConsumerState<RecyclerHandover
     setState(() => _isLoading = true);
 
     try {
+      final authState = ref.read(authProvider);
+      final recyclerId = widget.payload['recycler_id'] ?? authState.userId;
+      
       final data = {
-        'recycler_id': widget.payload['recycler_id'],
+        'recycler_id': recyclerId,
         'actual_weight': double.parse(weightStr),
         'final_price': double.parse(priceStr),
-        'handover_gps': '19.0760,72.8777', // Mock GPS
+        'handover_gps': {'lat': 19.0760, 'lng': 72.8777}, // Fixed format
       };
 
+      final transactionId = widget.payload['transaction_id'];
+      final lotId = widget.payload['lot_id'];
+      
+      final endpoint = transactionId == 'manual-entry'
+          ? '/transactions/by-ref/$lotId/confirm'
+          : '/transactions/$transactionId/confirm';
+
       await DioClient.instance.patch(
-        '/transactions/${widget.payload['transaction_id']}/confirm',
+        endpoint,
         data: data,
       );
 
