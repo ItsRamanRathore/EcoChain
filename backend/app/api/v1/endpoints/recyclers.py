@@ -57,7 +57,10 @@ def match_recyclers(
     ).order_by(Price.date_recorded.desc()).first()
     market_price_high = float(latest_price.market_price_high) if latest_price and latest_price.market_price_high else 1.0
 
-    recyclers = db.query(Recycler).filter(Recycler.auth_status == 'Active').all()
+    recyclers = db.query(Recycler).filter(
+        Recycler.auth_status == 'Active',
+        Recycler.approval_status == 'approved'
+    ).all()
     matches = []
 
     for r in recyclers:
@@ -86,7 +89,7 @@ def get_recyclers(
     db: Session = Depends(get_db)
 ):
     """Get all available recyclers"""
-    recyclers = db.query(Recycler).offset(skip).limit(limit).all()
+    recyclers = db.query(Recycler).filter(Recycler.approval_status == 'approved').offset(skip).limit(limit).all()
     return recyclers
 
 @router.get("/me", response_model=RecyclerResponse)

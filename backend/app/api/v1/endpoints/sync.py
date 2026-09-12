@@ -56,7 +56,10 @@ def sync_pull(
         
     # Mocking sync query. Should filter by updated_at if implemented on model.
     prices = db.query(Price).all()
-    recyclers = db.query(Recycler).filter(Recycler.auth_status == 'Active').all()
+    recyclers = db.query(Recycler).filter(
+        Recycler.auth_status == 'Active',
+        Recycler.approval_status == 'approved'
+    ).all()
     
     return {
         "prices": prices,

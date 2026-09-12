@@ -53,7 +53,17 @@ def get_platform_metrics(db: Session = Depends(get_db), admin_payload=Depends(ge
 @router.get("/recyclers")
 def get_recyclers(db: Session = Depends(get_db), admin_payload=Depends(get_current_admin)):
     recyclers = db.query(Recycler).filter(Recycler.approval_status == "approved").all()
-    return recyclers
+    return [
+        {
+            "recycler_id": str(r.recycler_id),
+            "name": r.name,
+            "email": r.email,
+            "facility_address": r.facility_address,
+            "district": r.facility_address,
+            "auth_status": r.auth_status,
+        }
+        for r in recyclers
+    ]
 
 @router.get("/recyclers/pending")
 def get_pending_recyclers(db: Session = Depends(get_db), admin_payload=Depends(get_current_admin)):
