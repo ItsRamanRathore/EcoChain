@@ -28,6 +28,7 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
   String? _selectedCategory;
   String _weightInput = '';
   String? _aiSuggestedCategory;
+  bool _isCapturing = false;
 
   final Map<String, Color> _categories = {
     'PCB': const Color(0xFFE8F5E9),
@@ -53,26 +54,39 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
   }
 
   Future<void> _capturePhoto() async {
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-    if (photo != null) {
-      setState(() {
-        _imageFile = photo;
-        _aiSuggestedCategory = 'Analyzing...';
-      });
-      _nextPage();
-      
-      final bytes = await photo.readAsBytes();
-      final decodedImage = img.decodeImage(bytes);
-      if (decodedImage != null) {
-        final result = _classifier.classify(decodedImage);
+    setState(() => _isCapturing = true);
+    try {
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+      if (photo != null) {
         setState(() {
-          _aiSuggestedCategory = result['category'] as String;
-          _selectedCategory = result['category'] as String;
+          _imageFile = photo;
+          _aiSuggestedCategory = 'Analyzing...';
         });
-      } else {
-        setState(() {
-          _aiSuggestedCategory = 'Unknown';
-        });
+        
+        final bytes = await photo.readAsBytes();
+        final decodedImage = img.decodeImage(bytes);
+        if (decodedImage != null) {
+          final result = _classifier.classify(decodedImage);
+          if (mounted) {
+            setState(() {
+              _aiSuggestedCategory = result['category'] as String;
+              _selectedCategory = result['category'] as String;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _aiSuggestedCategory = 'Unknown';
+            });
+          }
+        }
+        if (mounted) {
+          _nextPage();
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCapturing = false);
       }
     }
   }
@@ -144,6 +158,30 @@ class _CreateLotScreenState extends ConsumerState<CreateLotScreen> {
   }
 
   Widget _buildCameraScreen() {
+    if (_isCapturing) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+              strokeWidth: 4,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Analyzing Image with AI...',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Please wait while we categorize your waste item',
+              style: TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

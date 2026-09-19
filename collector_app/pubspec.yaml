@@ -33,7 +33,7 @@ dependencies:
   
   # Location & Hardware
   geolocator: ^13.0.2
-  mobile_scanner: ^5.2.3
+  google_mlkit_barcode_scanning: ^0.13.0
   permission_handler: ^11.3.1
   
   # UI & Accessibility

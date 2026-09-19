@@ -12,3 +12,9 @@
 # Play Core Warnings
 -keep class com.google.android.play.core.** { *; }
 -dontwarn com.google.android.play.core.**
+
+# ML Kit Barcode Scanning (Fix for Release Mode NPE)
+-keepclassmembers class * extends com.google.android.gms.internal.mlkit_vision_barcode_bundled.zzeh { <fields>; }
+-keepclasseswithmembernames class * { native <methods>; }
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_barcode** { *; }
