@@ -2,6 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/dio_client.dart';
 
+// Sentinel used to distinguish "pass null explicitly" from "not provided"
+// in copyWith for nullable String fields.
+const _absent = Object();
+
 class AuthState {
   final bool isLoading;
   final bool isAuthenticated;
@@ -22,18 +26,18 @@ class AuthState {
   AuthState copyWith({
     bool? isLoading,
     bool? isAuthenticated,
-    String? role,
-    String? userId,
-    String? displayName,
-    String? error,
+    Object? role = _absent,
+    Object? userId = _absent,
+    Object? displayName = _absent,
+    Object? error = _absent,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      role: role ?? this.role,
-      userId: userId ?? this.userId,
-      displayName: displayName ?? this.displayName,
-      error: error ?? this.error,
+      role: identical(role, _absent) ? this.role : role as String?,
+      userId: identical(userId, _absent) ? this.userId : userId as String?,
+      displayName: identical(displayName, _absent) ? this.displayName : displayName as String?,
+      error: identical(error, _absent) ? this.error : error as String?,
     );
   }
 }
@@ -66,10 +70,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _saveSession(Map<String, dynamic> data) async {
-    await _storage.write(key: 'jwt_token', value: data['access_token']);
-    await _storage.write(key: 'user_role', value: data['role']);
-    await _storage.write(key: 'user_id', value: data['user_id']);
-    await _storage.write(key: 'display_name', value: data['display_name'] ?? '');
+    await _storage.write(key: 'jwt_token', value: data['access_token'] as String?);
+    await _storage.write(key: 'user_role', value: data['role'] as String?);
+    await _storage.write(key: 'user_id', value: data['user_id'] as String?);
+    await _storage.write(key: 'display_name', value: (data['display_name'] ?? '') as String);
   }
 
   /// Collector: login with phone + PIN

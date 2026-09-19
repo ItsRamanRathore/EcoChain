@@ -44,7 +44,14 @@ def confirm_transaction(
     tx.handover_location = tx_confirm.handover_gps
     tx.transaction_status = 'Completed'
     tx.handover_datetime = datetime.now(timezone.utc)
-    
+
+    # Increment collector stats
+    from app.models.collector import Collector
+    collector = db.query(Collector).filter(Collector.collector_id == tx.collector_id).first()
+    if collector:
+        collector.total_transactions = (collector.total_transactions or 0) + 1
+        collector.total_earnings = float(collector.total_earnings or 0.0) + float(tx_confirm.final_price or 0.0)
+
     db.commit()
     db.refresh(tx)
     return tx
@@ -74,6 +81,13 @@ def confirm_transaction_by_ref(
     tx.transaction_status = 'Completed'
     tx.handover_datetime = datetime.now(timezone.utc)
     
+    # Increment collector stats
+    from app.models.collector import Collector
+    collector = db.query(Collector).filter(Collector.collector_id == tx.collector_id).first()
+    if collector:
+        collector.total_transactions = (collector.total_transactions or 0) + 1
+        collector.total_earnings = float(collector.total_earnings or 0.0) + float(tx_confirm.final_price or 0.0)
+
     db.commit()
     db.refresh(tx)
     return tx

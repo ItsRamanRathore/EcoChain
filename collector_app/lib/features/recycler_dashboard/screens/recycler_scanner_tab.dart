@@ -11,29 +11,86 @@ class RecyclerScannerTab extends StatefulWidget {
   State<RecyclerScannerTab> createState() => _RecyclerScannerTabState();
 }
 
-class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
-  final MobileScannerController _scannerController = MobileScannerController();
+/// Uses [WidgetsBindingObserver] to handle app lifecycle (foreground/background)
+/// and overrides [didChangeDependencies] to handle GoRouter ShellRoute tab switches,
+/// since [initState] only fires once when the tab is first created inside a ShellRoute.
+class _RecyclerScannerTabState extends State<RecyclerScannerTab>
+    with WidgetsBindingObserver {
+  late final MobileScannerController _scannerController;
   bool _isProcessing = false;
   bool _hasCameraPermission = false;
+  bool _isScannerRunning = false;
   final TextEditingController _refController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _requestCameraPermission();
+    // autoStart: false — we manage start/stop manually for full lifecycle control
+    _scannerController = MobileScannerController(autoStart: false);
+    WidgetsBinding.instance.addObserver(this);
+    _initCamera();
   }
 
-  Future<void> _requestCameraPermission() async {
+  /// Request camera permission and start the scanner if granted.
+  Future<void> _initCamera() async {
     final status = await Permission.camera.request();
-    if (mounted) {
-      setState(() {
-        _hasCameraPermission = status.isGranted;
-      });
+    if (!mounted) return;
+    final granted = status.isGranted;
+    setState(() => _hasCameraPermission = granted);
+    if (granted) _startScanner();
+  }
+
+  void _startScanner() {
+    if (!_isScannerRunning && _hasCameraPermission) {
+      _scannerController.start();
+      if (mounted) setState(() => _isScannerRunning = true);
+    }
+  }
+
+  void _stopScanner() {
+    if (_isScannerRunning) {
+      _scannerController.stop();
+      if (mounted) setState(() => _isScannerRunning = false);
+    }
+  }
+
+  /// [didChangeDependencies] is called every time the route context changes —
+  /// including when the user switches tabs inside a [ShellRoute]. This is the
+  /// correct hook to start/stop the scanner on tab visibility changes, since
+  /// [initState] only fires once per widget instance lifetime.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final location = GoRouterState.of(context).matchedLocation;
+    final isActive = location.startsWith('/recycler/scanner');
+    if (isActive && _hasCameraPermission && !_isScannerRunning) {
+      _startScanner();
+    } else if (!isActive && _isScannerRunning) {
+      _stopScanner();
+    }
+  }
+
+  /// Handles app going to background / returning to foreground.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Only act when this tab is currently visible
+    final location = GoRouterState.of(context).matchedLocation;
+    if (!location.startsWith('/recycler/scanner')) return;
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _startScanner();
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        _stopScanner();
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scannerController.dispose();
     _refController.dispose();
     super.dispose();
@@ -41,9 +98,8 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
 
   void _onDetect(BarcodeCapture capture) {
     if (_isProcessing) return;
-    
-    final List<Barcode> barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
+
+    for (final barcode in capture.barcodes) {
       if (barcode.rawValue != null) {
         _processScannedData(barcode.rawValue!);
         break;
@@ -53,28 +109,26 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
 
   void _processScannedData(String data) {
     setState(() => _isProcessing = true);
-    
+
     try {
       final payload = jsonDecode(data);
       if (payload.containsKey('lot_id') && payload.containsKey('transaction_id')) {
-        // Stop scanning
-        _scannerController.stop();
-        
-        // Navigate to confirmation screen
+        _stopScanner();
+
         context.push('/recycler/handover/confirm', extra: payload).then((_) {
-          // Restart scanner when returning
+          // Restart the scanner when the user pops back from the confirm screen
           if (mounted) {
             setState(() => _isProcessing = false);
-            _scannerController.start();
+            _startScanner();
           }
         });
         return;
       }
     } catch (e) {
-      // Not a valid JSON or not our QR format
+      // Not valid JSON or not our QR format — fall through to reset
     }
-    
-    // Reset if failed
+
+    // Reset processing flag after a short delay if no valid QR was found
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _isProcessing = false);
     });
@@ -96,8 +150,8 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
                   controller: _scannerController,
                   onDetect: _onDetect,
                 ),
-                
-                // Scanner Overlay overlay
+
+                // Viewfinder overlay
                 Container(
                   decoration: ShapeDecoration(
                     shape: QrScannerOverlayShape(
@@ -109,8 +163,8 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
                     ),
                   ),
                 ),
-                
-                // Manual entry
+
+                // Manual ref-number entry
                 Positioned(
                   bottom: 40,
                   left: 24,
@@ -146,7 +200,6 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
                             ElevatedButton(
                               onPressed: () {
                                 if (_refController.text.isNotEmpty) {
-                                  // Mocking manual entry payload
                                   _processScannedData(jsonEncode({
                                     'lot_id': _refController.text,
                                     'transaction_id': 'manual-entry',
@@ -196,8 +249,10 @@ class _RecyclerScannerTabState extends State<RecyclerScannerTab> {
             ElevatedButton.icon(
               onPressed: () async {
                 final status = await Permission.camera.request();
-                if (status.isGranted && mounted) {
+                if (!mounted) return;
+                if (status.isGranted) {
                   setState(() => _hasCameraPermission = true);
+                  _startScanner();
                 } else {
                   openAppSettings();
                 }
@@ -247,25 +302,16 @@ class QrScannerOverlayShape extends ShapeBorder {
 
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    Path _getLeftTopPath(Rect rect) {
+    Path getLeftTopPath(Rect rect) {
       return Path()
         ..moveTo(rect.left, rect.bottom)
         ..lineTo(rect.left, rect.top)
         ..lineTo(rect.right, rect.top);
     }
-    return _getLeftTopPath(rect)
-      ..lineTo(
-        rect.right,
-        rect.bottom,
-      )
-      ..lineTo(
-        rect.left,
-        rect.bottom,
-      )
-      ..lineTo(
-        rect.left,
-        rect.top,
-      );
+    return getLeftTopPath(rect)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(rect.left, rect.bottom)
+      ..lineTo(rect.left, rect.top);
   }
 
   @override
@@ -274,25 +320,27 @@ class QrScannerOverlayShape extends ShapeBorder {
     final borderWidthSize = width / 2;
     final height = rect.height;
     final borderOffset = borderWidth / 2;
-    final _borderLength = borderLength > cutOutSize / 2 + borderWidthSize ? cutOutSize / 2 + borderOffset : borderLength;
-    final _cutOutSize = cutOutSize < width ? cutOutSize : width - borderOffset;
-    
+    final effectiveBorderLength = borderLength > cutOutSize / 2 + borderWidthSize
+        ? cutOutSize / 2 + borderOffset
+        : borderLength;
+    final effectiveCutOutSize = cutOutSize < width ? cutOutSize : width - borderOffset;
+
     final backgroundPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
-      
+
     final borderPaint = Paint()
       ..color = borderColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth;
-      
+
     final cutOutRect = Rect.fromLTWH(
-      rect.left + width / 2 - _cutOutSize / 2 + borderOffset,
-      rect.top + height / 2 - _cutOutSize / 2 + borderOffset,
-      _cutOutSize - borderOffset * 2,
-      _cutOutSize - borderOffset * 2,
+      rect.left + width / 2 - effectiveCutOutSize / 2 + borderOffset,
+      rect.top + height / 2 - effectiveCutOutSize / 2 + borderOffset,
+      effectiveCutOutSize - borderOffset * 2,
+      effectiveCutOutSize - borderOffset * 2,
     );
-    
+
     canvas.saveLayer(rect, backgroundPaint);
     canvas.drawRect(rect, backgroundPaint);
     canvas.drawRRect(
@@ -300,34 +348,34 @@ class QrScannerOverlayShape extends ShapeBorder {
       Paint()..blendMode = BlendMode.clear,
     );
     canvas.restore();
-    
-    // Draw corners
+
+    // Draw corner markers
     final path = Path();
     // Top left
-    path.moveTo(cutOutRect.left, cutOutRect.top + _borderLength);
+    path.moveTo(cutOutRect.left, cutOutRect.top + effectiveBorderLength);
     path.lineTo(cutOutRect.left, cutOutRect.top + borderRadius);
     path.arcToPoint(Offset(cutOutRect.left + borderRadius, cutOutRect.top),
         radius: Radius.circular(borderRadius));
-    path.lineTo(cutOutRect.left + _borderLength, cutOutRect.top);
+    path.lineTo(cutOutRect.left + effectiveBorderLength, cutOutRect.top);
     // Top right
-    path.moveTo(cutOutRect.right - _borderLength, cutOutRect.top);
+    path.moveTo(cutOutRect.right - effectiveBorderLength, cutOutRect.top);
     path.lineTo(cutOutRect.right - borderRadius, cutOutRect.top);
     path.arcToPoint(Offset(cutOutRect.right, cutOutRect.top + borderRadius),
         radius: Radius.circular(borderRadius));
-    path.lineTo(cutOutRect.right, cutOutRect.top + _borderLength);
+    path.lineTo(cutOutRect.right, cutOutRect.top + effectiveBorderLength);
     // Bottom right
-    path.moveTo(cutOutRect.right, cutOutRect.bottom - _borderLength);
+    path.moveTo(cutOutRect.right, cutOutRect.bottom - effectiveBorderLength);
     path.lineTo(cutOutRect.right, cutOutRect.bottom - borderRadius);
     path.arcToPoint(Offset(cutOutRect.right - borderRadius, cutOutRect.bottom),
         radius: Radius.circular(borderRadius));
-    path.lineTo(cutOutRect.right - _borderLength, cutOutRect.bottom);
+    path.lineTo(cutOutRect.right - effectiveBorderLength, cutOutRect.bottom);
     // Bottom left
-    path.moveTo(cutOutRect.left + _borderLength, cutOutRect.bottom);
+    path.moveTo(cutOutRect.left + effectiveBorderLength, cutOutRect.bottom);
     path.lineTo(cutOutRect.left + borderRadius, cutOutRect.bottom);
     path.arcToPoint(Offset(cutOutRect.left, cutOutRect.bottom - borderRadius),
         radius: Radius.circular(borderRadius));
-    path.lineTo(cutOutRect.left, cutOutRect.bottom - _borderLength);
-    
+    path.lineTo(cutOutRect.left, cutOutRect.bottom - effectiveBorderLength);
+
     canvas.drawPath(path, borderPaint);
   }
 

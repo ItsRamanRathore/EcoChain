@@ -102,13 +102,36 @@ def confirm_handover(
     trace_record = db.query(Traceability).filter(Traceability.lot_id == lot_id).first()
     if not trace_record:
         raise HTTPException(status_code=404, detail="Handover record not found")
-        
+
+    now = datetime.now(timezone.utc)
+
+    # Update traceability record
     trace_record.recycler_confirmation = True
-    trace_record.recycler_confirm_time = datetime.now(timezone.utc)
-    trace_record.handover_timestamp = datetime.now(timezone.utc)
+    trace_record.recycler_confirm_time = now
+    trace_record.handover_timestamp = now
     trace_record.handover_gps = confirm_in.handover_gps
     trace_record.weight_at_handover = confirm_in.actual_weight
-    
+
+    # Also complete the associated transaction so the recycler dashboard
+    # moves it from "Pending" to "Recent Transactions".
+    transaction = db.query(Transaction).filter(Transaction.lot_id == lot_id).first()
+    if transaction:
+        transaction.transaction_status = 'Completed'
+        transaction.handover_datetime = now
+        transaction.quantity_weight = confirm_in.actual_weight
+        transaction.final_price = confirm_in.final_price
+        transaction.handover_location = confirm_in.handover_gps
+
+        # Increment the collector's lifetime stats so their profile page stays current.
+        collector = db.query(Collector).filter(
+            Collector.collector_id == transaction.collector_id
+        ).first()
+        if collector:
+            collector.total_transactions = (collector.total_transactions or 0) + 1
+            collector.total_earnings = (
+                float(collector.total_earnings or 0) + float(confirm_in.final_price or 0)
+            )
+
     db.commit()
     return {"message": "Handover confirmed successfully"}
 
